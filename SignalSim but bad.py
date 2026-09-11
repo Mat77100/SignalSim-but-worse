@@ -8,7 +8,7 @@ SampleRate = 44100 #values / second played (frequency). 44100 is 44.1 kHz and is
 def GenarateNoise(Duration): #Duration is length of messadge in seconds
 
     Noise = np.random.uniform(-1,1,SampleRate*Duration)
-    Noise = np.convolve(Noise, np.ones(25))
+    Noise = np.convolve(Noise, np.ones(25), mode="same")
     Noise /= 100 #NOISE LOUDNESS
 
     #Crackling within static
@@ -22,15 +22,19 @@ def GenarateNoise(Duration): #Duration is length of messadge in seconds
 
 Noise = GenarateNoise(5)
 
-def AlienBeacon(Duration):
+def AlienLowPulse(Duration):
     t = np.arange(0,Duration,1/SampleRate)
-    #Sound = np.sin(2*np.pi*440*t)  #Sine wave
-    Sound = 2 * (440 *t %1) -1  #Sawtooth wave
-
-    np.random.normal()
+    #Sound = np.sin(2*np.pi*220*t)  #Sine wave
+    Sound = 2 * (150 *t %1) -1  #Sawtooth wave
+    t = t/Duration
+    Pulse = np.where(t<0.5, (2*t)**4, (2*(1-t))**6)
+    Sound = Sound * Pulse
     return Sound
 
-Noise = AlienBeacon(3)
+Pulse = AlienLowPulse(3)
+Pulse = np.pad(Pulse, ((len(Noise)-len(Pulse))//2, (len(Noise)-len(Pulse)) - (len(Noise)-len(Pulse))//2), mode="constant")
 
-sd.play(Noise,SampleRate)
+Audio = Noise + Pulse
+
+sd.play(Audio,SampleRate)
 sd.wait()
